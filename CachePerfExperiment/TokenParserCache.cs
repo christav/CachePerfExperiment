@@ -8,9 +8,8 @@ using System.Threading.Tasks;
 
 namespace CachePerfExperiment
 {
-    class TokenParserCache: ITokenParser
+    class TokenParserCache: ITokenParser, IDecorator<ITokenParser>
     {
-        private ITokenParser inner;
         private ConcurrentDictionary<string, string> cache = new ConcurrentDictionary<string, string>();
         private ConcurrentQueue<Tuple<DateTime, string>> expirationList = new ConcurrentQueue<Tuple<DateTime, string>>();
 
@@ -19,9 +18,8 @@ namespace CachePerfExperiment
         private TimeSpan reaperInterval = TimeSpan.FromMilliseconds(Parameters.CacheReaperIntervalMs);
         private TimeSpan cacheExpiration = TimeSpan.FromMilliseconds(Parameters.CacheEntryTtlMs);
 
-        public TokenParserCache(ITokenParser nextParser)
+        public TokenParserCache()
         {
-            inner = nextParser;
             cacheReaper = Task.Run(() => CacheReaper());
         }
 
@@ -32,10 +30,17 @@ namespace CachePerfExperiment
             {
                 return cacheHit;
             }
-            string result = await inner.ParseAsync(token);
+            string result = await Next.ParseAsync(token);
             cache[token] = result;
             expirationList.Enqueue(Tuple.Create(DateTime.Now + cacheExpiration, token));
             return result;
+        }
+
+        public ITokenParser Next { get; private set; }
+
+        public void Wrap(ITokenParser inner)
+        {
+            Next  = inner;
         }
 
         private async Task CacheReaper()

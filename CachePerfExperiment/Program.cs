@@ -16,8 +16,8 @@ namespace CachePerfExperiment
         private void RunSimulation()
         {
             ITokenParser parser = CreateTokenParser();
-            var requestChannel = new Channel<string>();
-            var statsChannel = new Channel<long>();
+            var requestChannel = new Channel<string>(10000);
+            var statsChannel = new Channel<long>(1000);
             var actors = 
                 new IRunnable[] {new RequestSource(requestChannel)}
                     .Concat(
@@ -45,7 +45,8 @@ namespace CachePerfExperiment
 
         private ITokenParser CreateTokenParser()
         {
-            return new TokenParserCache(
+            return Decorator.Chain<ITokenParser>(
+                new TokenParserCache2(),
                 new SlowTokenParser());
         }
     }

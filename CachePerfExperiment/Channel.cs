@@ -11,8 +11,14 @@ namespace CachePerfExperiment
     public class Channel<TData> : IDisposable
     {
         private ConcurrentQueue<ChannelMessage<TData>> queue = new ConcurrentQueue<ChannelMessage<TData>>();
-        private SemaphoreSlim sem = new SemaphoreSlim(0);
+        private SemaphoreSlim readSem = new SemaphoreSlim(0);
+        private SemaphoreSlim writeSem;
         private CancellationTokenSource tokenSource = new CancellationTokenSource();
+
+        public Channel(int maxSize)
+        {
+            writeSem = new SemaphoreSlim(maxSize);
+        } 
 
         public async Task<ChannelMessage<TData>> ReceiveAsync()
         {
@@ -24,7 +30,7 @@ namespace CachePerfExperiment
             var token = tokenSource.Token;
             try
             {
-                await sem.WaitAsync(token);
+                await readSem.WaitAsync(token);
                 ChannelMessage<TData> result;
                 bool dequeued = queue.TryDequeue(out result);
                 if (!dequeued)
@@ -49,8 +55,21 @@ namespace CachePerfExperiment
             {
                 return false;
             }
+            writeSem.Wait();
             queue.Enqueue(ChannelMessage<TData>.DataMessage(message));
-            sem.Release();
+            readSem.Release();
+            return true;
+        }
+
+        public async Task<bool> PublishAsync(TData message)
+        {
+            if (tokenSource.IsCancellationRequested)
+            {
+                return false;
+            }
+            await writeSem.WaitAsync();
+            queue.Enqueue(ChannelMessage<TData>.DataMessage(message));
+            readSem.Release();
             return true;
         }
 
@@ -59,7 +78,7 @@ namespace CachePerfExperiment
             if (!tokenSource.IsCancellationRequested)
             {
                 queue.Enqueue(ChannelMessage<TData>.ClosedMessage());
-                sem.Release();
+                readSem.Release();
             }
         }
 
@@ -70,10 +89,10 @@ namespace CachePerfExperiment
                 tokenSource.Dispose();
                 tokenSource = null;
             }
-            if (sem != null)
+            if (readSem != null)
             {
-                sem.Dispose();
-                sem = null;
+                readSem.Dispose();
+                readSem = null;
             }
         }
     }

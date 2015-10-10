@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Channel.cs" />
+    <Compile Include="IDecorator.cs" />
     <Compile Include="IRunnable.cs" />
     <Compile Include="ITokenParser.cs" />
     <Compile Include="Parameters.cs" />
@@ -54,6 +55,7 @@
     <Compile Include="StatisticsTracker.cs" />
     <Compile Include="StatsProcessor.cs" />
     <Compile Include="TokenParserCache.cs" />
+    <Compile Include="TokenParserCache2.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
