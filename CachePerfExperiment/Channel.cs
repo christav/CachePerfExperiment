@@ -55,10 +55,18 @@ namespace CachePerfExperiment
             {
                 return false;
             }
-            writeSem.Wait();
-            queue.Enqueue(ChannelMessage<TData>.DataMessage(message));
-            readSem.Release();
-            return true;
+            var token = tokenSource.Token;
+            try
+            {
+                writeSem.Wait(token);
+                queue.Enqueue(ChannelMessage<TData>.DataMessage(message));
+                readSem.Release();
+                return true;
+            }
+            catch (OperationCanceledException)
+            {
+                return false;
+            }
         }
 
         public async Task<bool> PublishAsync(TData message)
@@ -67,10 +75,18 @@ namespace CachePerfExperiment
             {
                 return false;
             }
-            await writeSem.WaitAsync();
-            queue.Enqueue(ChannelMessage<TData>.DataMessage(message));
-            readSem.Release();
-            return true;
+            var token = tokenSource.Token;
+            try
+            {
+                await writeSem.WaitAsync(token);
+                queue.Enqueue(ChannelMessage<TData>.DataMessage(message));
+                readSem.Release();
+                return true;
+            }
+            catch (OperationCanceledException)
+            {
+                return false;
+            }
         }
 
         public void Close()
