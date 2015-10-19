@@ -46,7 +46,8 @@ namespace CachePerfExperiment
         private ITokenParser CreateTokenParser()
         {
             return Decorator.Chain<ITokenParser>(
-                new TokenParserCache2(),
+                //new TokenParserCache2(),
+                new TokenParserCache(),
                 new SlowTokenParser());
         }
     }

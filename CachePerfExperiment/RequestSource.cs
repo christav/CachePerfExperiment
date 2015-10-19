@@ -25,7 +25,7 @@ namespace CachePerfExperiment
             Console.WriteLine("Request source starting up");
             CreateTokens();
             int hotIndex = 0;
-            int maxRequests = Parameters.RunLengthMs*Parameters.RequestsPerSecond/1000;
+            int maxRequests = (int)(Parameters.RunLengthMs*(Parameters.RequestsPerSecond/1000.0));
             for(int requestCount = 0; requestCount < maxRequests; ++requestCount)
             {
                 int index;
