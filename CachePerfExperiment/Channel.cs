@@ -41,6 +41,7 @@ namespace CachePerfExperiment
                 {
                     tokenSource.Cancel();
                 }
+                writeSem.Release();
                 return result;
             }
             catch (OperationCanceledException)
