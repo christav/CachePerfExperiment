@@ -50,6 +50,26 @@ namespace CachePerfExperiment
             }
         }
 
+        public async Task ReceiveAllAsync(Func<TData, Task> messageProcessor)
+        {
+            var channelMessage = await ReceiveAsync();
+            while (!channelMessage.IsClosed)
+            {
+                await messageProcessor(channelMessage.Data);
+                channelMessage = await ReceiveAsync();
+            }
+        }
+
+        public async Task ReceiveAllAsync(Action<TData> messageProcessor)
+        {
+            var channelMessage = await ReceiveAsync();
+            while (!channelMessage.IsClosed)
+            {
+                messageProcessor(channelMessage.Data);
+                channelMessage = await ReceiveAsync();
+            }
+        }
+
         public bool Publish(TData message)
         {
             if (tokenSource.IsCancellationRequested)

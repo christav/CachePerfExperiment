@@ -27,18 +27,16 @@ namespace CachePerfExperiment
         public async Task RunAsync()
         {
             Console.WriteLine("Request processor starting up");
-            ChannelMessage<string> tokenMessage = await requestChannel.ReceiveAsync();
-            while (!tokenMessage.IsClosed)
+            await requestChannel.ReceiveAllAsync(async token =>
             {
                 Stopwatch s = new Stopwatch();
                 s.Start();
 
-                await parser.ParseAsync(tokenMessage.Data);
+                await parser.ParseAsync(token);
 
                 s.Stop();
                 statsChannel.Publish(s.ElapsedMilliseconds);
-                tokenMessage = await requestChannel.ReceiveAsync();
-            }
+            });
 
             Console.WriteLine("Request processor shutting down, channel is closed");
         }

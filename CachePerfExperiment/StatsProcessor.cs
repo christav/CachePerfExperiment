@@ -16,12 +16,10 @@ namespace CachePerfExperiment
         public async Task RunAsync()
         {
             Console.WriteLine("Stats processor starting up");
-            var sampleMessage = await samplesChannel.ReceiveAsync();
-            while(!sampleMessage.IsClosed)
+            await samplesChannel.ReceiveAllAsync(sample =>
             {
-                stats.AddSample(sampleMessage.Data);
-                sampleMessage = await samplesChannel.ReceiveAsync();
-            }
+                stats.AddSample(sample);
+            });
 
             Console.WriteLine("Stats processor shutting down, channel was closed");
 

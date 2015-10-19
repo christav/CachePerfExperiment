@@ -18,16 +18,14 @@ namespace CachePerfExperiment
         public async Task RunAsync()
         {
             Console.WriteLine("Hit counter starting up");
-            var hitMessage = await hitChannel.ReceiveAsync();
-            while (!hitMessage.IsClosed)
+            await hitChannel.ReceiveAllAsync(hit =>
             {
                 Interlocked.Increment(ref totalTries);
-                if (hitMessage.Data)
+                if (hit)
                 {
                     Interlocked.Increment(ref totalHits);
                 }
-                hitMessage = await hitChannel.ReceiveAsync();
-            }
+            });
 
             Console.WriteLine("Hit counter shutting down, channel closed");
         }
