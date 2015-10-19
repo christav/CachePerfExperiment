@@ -11,7 +11,7 @@
         // Request generation
         public const int NumDistinctTokens = 10000;
         public const int TokenLengthBytes = 2250;
-        public const int RunLengthMs = 1*60*1000;
+        public const int RunLengthMs = 10*60*1000;
         public const int RequestsPerSecond = 100;
         public const int NumHotEntries = 100;
         public const int HotEntryInterval = 5;

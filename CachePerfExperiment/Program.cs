@@ -17,7 +17,7 @@ namespace CachePerfExperiment
         {
             ITokenParser parser = CreateTokenParser();
             var requestChannel = new Channel<string>(10000);
-            var statsChannel = new Channel<long>(1000);
+            var statsChannel = new Channel<long>(10000);
             var actors = 
                 new IRunnable[] {new RequestSource(requestChannel)}
                     .Concat(
@@ -26,7 +26,7 @@ namespace CachePerfExperiment
                 .ToList();
 
             var stats = new StatsProcessor(statsChannel);
-            Task.Run(() => stats.RunAsync());
+            var statsTask = stats.RunAsync();
 
             var actorTasks = actors.Select(a => a.RunAsync()).ToArray();
 
@@ -35,6 +35,7 @@ namespace CachePerfExperiment
 
             Console.WriteLine("Simulation completed");
             statsChannel.Close();
+            statsTask.Wait();
 
             Console.WriteLine("Number of Messages: {0}", stats.Count);
             Console.WriteLine("Min Processing Time: {0} ms", stats.Min);
