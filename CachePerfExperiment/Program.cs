@@ -49,6 +49,12 @@ namespace CachePerfExperiment
             Console.WriteLine("Standard Deviation: {0}", stats.StandardDeviation);
             Console.WriteLine("Cache Hit Rate: {0} ({1} of {2} requests)", 
                 hitCounter.HitRate, hitCounter.TotalHits, hitCounter.TotalRequests);
+            Console.WriteLine();
+
+            Console.WriteLine("Min,Mean,Max,Std.Dev,HitRate,TotalHits,TotalRequests");
+            Console.WriteLine("{0},{1},{2},{3},{4},{5},{6}",
+                stats.Min, stats.Mean, stats.Max, stats.StandardDeviation,
+                hitCounter.HitRate,hitCounter.TotalHits, hitCounter.TotalRequests);
         }
 
         private ITokenParser CreateTokenParser(Channel<bool> hitCounterChannel)
