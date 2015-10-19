@@ -18,8 +18,11 @@ namespace CachePerfExperiment
         private TimeSpan reaperInterval = TimeSpan.FromMilliseconds(Parameters.CacheReaperIntervalMs);
         private TimeSpan cacheExpiration = TimeSpan.FromMilliseconds(Parameters.CacheEntryTtlMs);
 
-        public TokenParserCache()
+        private Channel<bool> hitCounterChannel;
+ 
+        public TokenParserCache(Channel<bool> hitCounterChannel)
         {
+            this.hitCounterChannel = hitCounterChannel;
             cacheReaper = Task.Run(() => CacheReaper());
         }
 
@@ -28,11 +31,13 @@ namespace CachePerfExperiment
             string cacheHit;
             if (cache.TryGetValue(token, out cacheHit))
             {
+                hitCounterChannel.PublishAsync(true);
                 return cacheHit;
             }
             string result = await Next.ParseAsync(token);
             cache[token] = result;
             expirationList.Enqueue(Tuple.Create(DateTime.Now + cacheExpiration, token));
+            hitCounterChannel.PublishAsync(false);
             return result;
         }
 

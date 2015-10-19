@@ -13,6 +13,13 @@ namespace CachePerfExperiment
 
         private Random rng = new Random();
 
+        private Channel<bool> hitCounterChannel;
+
+        public TokenParserCache2(Channel<bool> hitCounterChannel)
+        {
+            this.hitCounterChannel = hitCounterChannel;
+        }
+
         public async Task<string> ParseAsync(string token)
         {
             Tuple<string, DateTime> cacheEntry;
@@ -21,6 +28,7 @@ namespace CachePerfExperiment
                 if (cacheEntry.Item2 < DateTime.Now)
                 {
                     Scavenge();
+                    hitCounterChannel.PublishAsync(true);
                     return cacheEntry.Item1;
                 }
             }
@@ -30,6 +38,7 @@ namespace CachePerfExperiment
             var newValue = Tuple.Create(result, DateTime.Now + TimeSpan.FromMilliseconds(Parameters.CacheEntryTtlMs));
 
             cache.AddOrUpdate(token, newValue, (k, v) => newValue);
+            hitCounterChannel.PublishAsync(false);
             return result;
         }
 

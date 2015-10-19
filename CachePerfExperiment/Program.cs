@@ -15,9 +15,11 @@ namespace CachePerfExperiment
 
         private void RunSimulation()
         {
-            ITokenParser parser = CreateTokenParser();
+            var hitCounterChannel = new Channel<bool>(10000);
+            ITokenParser parser = CreateTokenParser(hitCounterChannel);
             var requestChannel = new Channel<string>(10000);
             var statsChannel = new Channel<long>(10000);
+
             var actors = 
                 new IRunnable[] {new RequestSource(requestChannel)}
                     .Concat(
@@ -27,6 +29,8 @@ namespace CachePerfExperiment
 
             var stats = new StatsProcessor(statsChannel);
             var statsTask = stats.RunAsync();
+            var hitCounter = new HitCounter(hitCounterChannel);
+            var hitCounterTask = hitCounter.RunAsync();
 
             var actorTasks = actors.Select(a => a.RunAsync()).ToArray();
 
@@ -35,20 +39,23 @@ namespace CachePerfExperiment
 
             Console.WriteLine("Simulation completed");
             statsChannel.Close();
-            statsTask.Wait();
+            hitCounterChannel.Close();
+            Task.WaitAll(statsTask, hitCounterTask);
 
             Console.WriteLine("Number of Messages: {0}", stats.Count);
             Console.WriteLine("Min Processing Time: {0} ms", stats.Min);
             Console.WriteLine("Average processing time: {0}", stats.Mean);
             Console.WriteLine("Max Processing Time: {0} ms", stats.Max);
             Console.WriteLine("Standard Deviation: {0}", stats.StandardDeviation);
+            Console.WriteLine("Cache Hit Rate: {0} ({1} of {2} requests)", 
+                hitCounter.HitRate, hitCounter.TotalHits, hitCounter.TotalRequests);
         }
 
-        private ITokenParser CreateTokenParser()
+        private ITokenParser CreateTokenParser(Channel<bool> hitCounterChannel)
         {
             return Decorator.Chain<ITokenParser>(
-                //new TokenParserCache2(),
-                new TokenParserCache(),
+                //new TokenParserCache2(hitCounterChannel),
+                new TokenParserCache(hitCounterChannel),
                 new SlowTokenParser());
         }
     }
