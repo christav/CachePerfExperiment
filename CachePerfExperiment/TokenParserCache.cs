@@ -56,7 +56,7 @@ namespace CachePerfExperiment
                 Tuple<DateTime, string> expirationEntry;
 
                 while (expirationList.TryPeek(out expirationEntry) &&
-                    expirationEntry.Item1 > DateTime.Now)
+                    expirationEntry.Item1 < DateTime.Now)
                 {
                     expirationList.TryDequeue(out expirationEntry);
                     string dummy;

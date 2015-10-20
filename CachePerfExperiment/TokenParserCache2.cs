@@ -25,7 +25,7 @@ namespace CachePerfExperiment
             Tuple<string, DateTime> cacheEntry;
             if (cache.TryGetValue(token, out cacheEntry))
             {
-                if (cacheEntry.Item2 < DateTime.Now)
+                if (cacheEntry.Item2 > DateTime.Now)
                 {
                     Scavenge();
                     hitCounterChannel.PublishAsync(true);
