@@ -60,8 +60,9 @@ namespace CachePerfExperiment
         private ITokenParser CreateTokenParser(Channel<bool> hitCounterChannel)
         {
             return Decorator.Chain<ITokenParser>(
+                new TokenParserLRUCache(hitCounterChannel),
                 //new TokenParserCache2(hitCounterChannel),
-                new TokenParserCache(hitCounterChannel),
+                //new TokenParserCache(hitCounterChannel),
                 new SlowTokenParser());
         }
     }

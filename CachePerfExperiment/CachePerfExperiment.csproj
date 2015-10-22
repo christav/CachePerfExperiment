@@ -57,6 +57,7 @@
     <Compile Include="StatsProcessor.cs" />
     <Compile Include="TokenParserCache.cs" />
     <Compile Include="TokenParserCache2.cs" />
+    <Compile Include="TokenParserLRUCache.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

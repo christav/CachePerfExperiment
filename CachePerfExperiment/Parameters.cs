@@ -26,7 +26,7 @@
         // Token caching parameters
         public const int CacheReaperIntervalMs = 5 * 1000;
         public const int CacheEntryTtlMs = 5 * 60 * 1000;
-        public const int CacheMaxEntries = 10000;
+        public const int CacheMaxEntries = 5000;
         public const int CacheNumToScavenge = 50;
     }
 }
